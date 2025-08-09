@@ -46,25 +46,27 @@ cell_annotation_df.sort_index(inplace=True)
 
 cell_coord_df = cell_coord_df[['centroid_x_px', 'centroid_y_px']]
 
+cell_annotation_df = cell_annotation_df[cell_annotation_df.iloc[:, -1] != -1]
+
 common_indices = cell_annotation_df.index.intersection(cell_prediction_df.index)
 cell_prediction_df = cell_prediction_df.loc[common_indices]
 cell_coord_df = cell_coord_df.loc[common_indices]
 
-# cell_prediction_df.iloc[:, -1] = cell_prediction_df.iloc[:, -1] + 1
+cell_prediction_df.iloc[:, -1] = cell_prediction_df.iloc[:, -1] + 1
 
 
-# df_merged = pd.merge(cell_prediction_df, cell_coord_df, left_index=True, right_index=True).dropna()
-# print("prediction + coord: ", len(df_merged))
+df_merged = pd.merge(cell_prediction_df, cell_coord_df, left_index=True, right_index=True).dropna()
+print("prediction + coord: ", len(df_merged))
 
-# plot_scatter(df_merged, f'{output_img_folder}/prediction.png')
+plot_scatter(df_merged, f'{output_img_folder}/prediction.png')
 
 
 # plotting manual annotations
 
 df_merged = pd.merge(cell_annotation_df, cell_coord_df, left_index=True, right_index=True).dropna()
-# print("annotation + coord: ", len(df_merged))
+print("annotation + coord: ", len(df_merged))
 
-# plot_scatter(df_merged, f'{output_img_folder}/annotation.png')
+plot_scatter(df_merged, f'{output_img_folder}/annotation.png')
 
 
 # print("annotation: ", )
@@ -91,22 +93,25 @@ ari = calc_ari(cell_annotation_df, cell_prediction_df)
 
 final_output_ari = f'{final_output_folder}/{dataset}/{samples[0]}/morphology/{scheme}/ari.csv'
 
-# print(f"Ari for dataset:{dataset} scheme:{scheme} is: ", ari)
+print(f"Ari for dataset:{dataset} scheme:{scheme} is: ", ari)
 pd.DataFrame([{"ARI": ari}]).to_csv(final_output_ari)
 
 
 
-scribble_labels = torch.load("preprocessed/labels.pt", weights_only=True)
-scribble_mask = torch.load("preprocessed/scribble_mask.pt", weights_only=True)
-cell_scribble_df = pd.read_csv("../input/cell_level_scribble.csv", index_col=0)
-
-pred_labels = torch.tensor(cell_prediction_df.values.ravel())
-
-scribble_truth = scribble_labels[scribble_mask]
-pred_scribble = pred_labels[scribble_mask]
-
-matches = (scribble_truth == pred_scribble)
-accuracy = matches.sum().item() / matches.numel()
+# scribble_labels = torch.load("preprocessed/labels.pt", weights_only=True)
+# scribble_mask = torch.load("preprocessed/scribble_mask.pt", weights_only=True)
+# cell_scribble_df = pd.read_csv("../input/cell_level_scribble.csv", index_col=0)
+# cell_prediction_df = pd.read_csv(sell_prediction_file, index_col=0)
+#
+# print(cell_prediction_df.iloc[:, -1].value_counts())
+#
+# pred_labels = torch.tensor(cell_prediction_df.values.ravel())
+#
+# scribble_truth = scribble_labels[scribble_mask]
+# pred_scribble = pred_labels[scribble_mask]
+#
+# matches = (scribble_truth == pred_scribble)
+# accuracy = matches.sum().item() / matches.numel()
 
 
 
@@ -127,6 +132,6 @@ print(df_compare.iloc[:,1].value_counts())
 # Save to CSV
 df_compare.to_csv("scribble_vs_prediction.csv", index=False)
 
-# print(f"Scribble Match Accuracy: {accuracy:.4f}")
+print(f"Scribble Match Accuracy: {accuracy:.4f}")
 
 

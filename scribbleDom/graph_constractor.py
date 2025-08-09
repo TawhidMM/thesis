@@ -1,8 +1,9 @@
+import pandas as pd
 import torch
-from torch_scatter import scatter_add
 from torch_geometric.nn import radius_graph
 from torch_geometric.utils import add_self_loops
-import pandas as pd
+from torch_scatter import scatter_add
+from argument_parser import *
 
 
 def radius_graph_torch(coords: torch.Tensor, radius: float, loop: bool = False):
@@ -49,6 +50,7 @@ def normalize_adj_torch(edge_index, edge_weight, num_nodes):
 
 
 def create_scribble_mask(df, label_col):
+    df[label_col] = df[label_col].fillna(-1)
     scribble_mask = df[label_col] != -1
 
     torch.save(torch.tensor(scribble_mask.to_numpy()), "preprocessed/scribble_mask.pt")
@@ -101,8 +103,14 @@ def build_graph_from_csv(csv_path, radius=0.02, sigma=0.01):
 
 
 if __name__ == "__main__":
-    # Example usage
-    cell_scribble = "/home/tawhid-mubashwir/Storage/morphlink/input/cell_level_scribble.csv"
+
+    if scheme == 'expert':
+        cell_scribble = "/home/tawhid-mubashwir/Storage/morphlink/input/cell_level_scribble.csv"
+    elif scheme == 'mclust':
+        cell_scribble = "../input/cell_mclust_backbone.csv"
+    else:
+        raise ValueError(f"Unknown scheme: {scheme}. Supported schemes are 'expert' and 'mclust'.")
+
     file_path = f"/home/tawhid-mubashwir/Storage/morphlink/morphology_preprocessing/morphology_with_spot.csv"
     morphology_pc_path = f"/home/tawhid-mubashwir/Storage/morphlink/input/morphology_pca_15.csv"
 
@@ -111,15 +119,13 @@ if __name__ == "__main__":
     build_graph_from_csv(file_path, spot_radius)
     print("Graph construction completed.")
 
-    LABEL_COLUMN = 'scribble_label'
-
     df = pd.read_csv(cell_scribble)
     print("Number of nodes in label :", len(df))
 
-    create_scribble_mask(df, LABEL_COLUMN)
+    create_scribble_mask(df, df.columns[-1])
     print("Scribble mask created.")
 
-    extract_labels(df, LABEL_COLUMN)
+    extract_labels(df, df.columns[-1])
     print("Labels extracted and saved.")
 
     create_feature_matrix(morphology_pc_path)

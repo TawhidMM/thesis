@@ -1,5 +1,3 @@
-import argparse
-import json
 import os
 
 import numpy as np
@@ -9,6 +7,7 @@ import torch.nn.functional as F
 from torch_geometric.data import Data
 from tqdm import tqdm
 
+from argument_parser import *
 from model import GraphClassifier
 
 
@@ -21,6 +20,11 @@ def compute_loss(logits, labels, scribble_mask, alpha=0.5):
         scribble_mask: (N,) boolean tensor indicating labeled nodes
         alpha: weight for unsupervised loss
     """
+
+    # print("Logits shape:", logits.shape)
+    # print("Labels shape:", labels.shape)
+    # print("Scribble mask shape:", scribble_mask.shape)
+    # print("Scribble mask shape:", scribble_mask.sum())
 
     non_scribble_mask = ~scribble_mask
 
@@ -47,41 +51,70 @@ def train(model, data, optimizer, scribble_mask, labels, device):
 
 
 
+def partial_scribble(labels, scribble_mask, label_fraction=0.2):
+    """
+    Randomly select a subset of labeled nodes to keep. The rest will be masked out.
+    Returns a new scribble_mask and optionally sparse labels.
+    """
+    # Get indices of labeled nodes
+    labeled_indices = torch.where(scribble_mask)[0]
+
+    num_keep = int(label_fraction * len(labeled_indices))
+    selected_indices = labeled_indices[torch.randperm(len(labeled_indices))[:num_keep]]
+
+    # Create new mask
+    new_mask = torch.zeros_like(scribble_mask, dtype=torch.bool)
+    new_mask[selected_indices] = True
+
+    updated_labels = labels.clone()
+    updated_labels[~new_mask] = -1
+
+    return updated_labels, new_mask
+
+
+
+def scribble_dom_hyperparams():
+    model_params = []
+    for sample in samples:
+        for seed in seed_options:
+            for lr in lr_options:
+                for alpha in alpha_options:
+                    model_params.append(
+                        {
+                            'seed': seed,
+                            'lr': lr,
+                            'sample': sample,
+                            'alpha': alpha
+                        }
+                    )
+
+    return model_params
+
+
+def auto_scribble_dom_hyperparams():
+    model_params = scribble_dom_hyperparams()
+    new_params = []
+
+    for beta in beta_options:
+        for params in model_params:
+            param_copy = params.copy()
+            param_copy['beta'] = beta
+            new_params.append(param_copy)
+
+    return new_params
+
+
+
+
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-parser = argparse.ArgumentParser(description='ScribbleSeg expert annotation pipeline')
-parser.add_argument('--params', help="The input parameters json file path", required=True)
 
-args = parser.parse_args()
+device = torch.device('cpu')
 
-with open(args.params) as f:
-   params = json.load(f)
-
-dataset = params['dataset']
-n_pcs = params['n_pcs']
-max_iter = params['max_iter']
-nConv = params['nConv']
-seed_options = params['seed_options']
-lr_options = params['lr_options']
-alpha_options = params['alpha_options']
-samples = params['samples']
-matrix_format_representation_of_data_path = params['matrix_represenation_of_ST_data_folder']
-output_data_path = params['model_output_folder']
-scheme = params['schema']
-
-
-
-
-device = None
-use_cuda = torch.cuda.is_available()
-
-if use_cuda:
+if torch.cuda.is_available():
     print("GPU available")
     device = torch.device('cuda')
-else:
-    print("GPU not available. Using CPU.")
-    device = torch.device('cpu')
 
 # Load saved components
 print("loading preprocessed data......")
@@ -94,29 +127,23 @@ cell_ids = pd.read_csv("/home/tawhid-mubashwir/Storage/morphlink/input/cell_leve
 cell_ids = cell_ids['Cell ID'].values
 
 
-
-
-
-model_params = []
-for sample in samples:
-    for seed in seed_options:
-        for lr in lr_options:
-            for alpha in alpha_options:
-                model_params.append(
-                    {
-                        'seed': seed,
-                        'lr': lr,
-                        'sample': sample,
-                        'alpha': alpha
-                    }
-                )
+if scheme == 'expert':
+    model_params = scribble_dom_hyperparams()
+elif scheme == 'mclust':
+    model_params = auto_scribble_dom_hyperparams()
+else:
+    raise ValueError(f"Unknown scheme: {scheme}. Supported schemes are 'expert' and 'mclust'.")
 
 
 for parameter in tqdm(model_params):
+    print(parameter)
     seed = parameter['seed']
     lr = parameter['lr']
     sample = parameter['sample']
     alpha = parameter['alpha']
+
+    if scheme == 'mclust':
+        beta = parameter['beta']
 
     print("************************************************")
     print('Model description:')
@@ -133,15 +160,21 @@ for parameter in tqdm(model_params):
     data = Data(x=x, edge_index=edge_index)
 
     NUM_CLASSES = labels.max().item() + 1
+    print(f'Number of classes: {NUM_CLASSES}')
     # why hidden layer is a list ?????
-    model = GraphClassifier(in_dim=x.size(1), hidden_dims=[64], num_classes=NUM_CLASSES)
+    model = GraphClassifier(in_dim=x.size(1), hidden_dims=[64], num_classes=n_cluster)
     model = model.to(device)
     # why not SDG ??? main pipeline uses SDG
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    current_labels = labels.clone()
+    current_masks = scribble_mask.clone()
+
+    if scheme == 'mclust':
+        current_labels, current_masks = partial_scribble(current_labels, current_masks, beta)
 
     for epoch in range(max_iter):
-        train_loss, scr_loss, sim_loss = train(model, data, optimizer, scribble_mask, labels, device)
+        train_loss, scr_loss, sim_loss = train(model, data, optimizer, current_masks, current_labels, device)
 
         if epoch % 100 == 0:
             print(f'Epoch {epoch:03d}, Loss: {train_loss:.4f}, '
@@ -157,6 +190,8 @@ for parameter in tqdm(model_params):
 
     output_folder_path = f'./{output_data_path}/{dataset}/{sample}/morphology'
     leaf_output_folder_path = f'{output_folder_path}/{scheme}/Hyper_{alpha}'
+    if scheme == 'mclust':
+        leaf_output_folder_path += f'_{beta}'
     os.makedirs(leaf_output_folder_path, exist_ok=True)
 
     predictions_df = pd.DataFrame({
@@ -177,6 +212,6 @@ for parameter in tqdm(model_params):
             "alpha": alpha
         }]
     )
+    if scheme == 'mclust':
+        meta_data_df['beta'] = beta
     meta_data_df.to_csv(f'{leaf_output_folder_path}/meta_data.csv')
-
-
