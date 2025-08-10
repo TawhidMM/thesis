@@ -56,17 +56,17 @@ def make_graph_backbone(mclust_result, edge_index, node_names, threshold=1.0, ou
 
 
 mclust_result=pd.read_csv("../input/cell_mclust_result.csv", index_col=0)
-# node_names = mclust_result.index
-# edge_index = torch.load("preprocessed/edge_index.pt", weights_only=True).cpu()
+# node_names = mclust_result_df.index
+# edge_index = torch.load("preprocessed/edge_index.power_transformation", weights_only=True).cpu()
 #
 # make_graph_backbone(
-#     mclust_result=mclust_result,
+#     mclust_result_df=mclust_result_df,
 #     edge_index=edge_index,
 #     node_names=node_names,
 #     output_path="../input/cell_mclust_backbone.csv"
 # )
 
-mclust_backbobe_result=pd.read_csv("../input/cell_mclust_backbone.csv", index_col=0)
+mclust_backbone_result=pd.read_csv("../input/cell_mclust_backbone.csv", index_col=0)
 
-print(mclust_backbobe_result.iloc[:,-1].value_counts())
+print(mclust_backbone_result.iloc[:,-1].value_counts())
 print(mclust_result.iloc[:,-1].value_counts())
