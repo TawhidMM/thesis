@@ -16,19 +16,19 @@ def make_graph_backbone(mclust_result, edge_index, node_names, threshold=1.0, ou
     """
 
     # Get cluster assignments as list aligned with node indices
-    cluster_labels = mclust_result.iloc[:, -1]  # assumes last column is cluster
-    cluster_map = dict(cluster_labels)  # barcode -> cluster
-    cluster_array = np.array([cluster_map[name] for name in node_names])  # index aligned
+    cluster_labels = mclust_result.iloc[:, -1]
+    cluster_map = dict(cluster_labels)
+    cluster_array = np.array([cluster_map[name] for name in node_names])
 
     num_nodes = len(node_names)
-    refined_clusters = np.full(num_nodes, None)  # initialize with None
+    refined_clusters = np.full(num_nodes, None)
 
     # Build adjacency list from edge_index
     adjacency = defaultdict(list)
     src, dst = edge_index
     for s, d in zip(src.tolist(), dst.tolist()):
         adjacency[s].append(d)
-        adjacency[d].append(s)  # undirected
+        adjacency[d].append(s)
 
     # Loop through all nodes
     for i in range(num_nodes):
@@ -43,7 +43,7 @@ def make_graph_backbone(mclust_result, edge_index, node_names, threshold=1.0, ou
         match_ratio = match_count / len(neighbors)
 
         if match_ratio >= threshold:
-            refined_clusters[i] = my_cluster  # keep it
+            refined_clusters[i] = my_cluster
 
     # Save result
     df_backbone = pd.DataFrame({
@@ -55,18 +55,37 @@ def make_graph_backbone(mclust_result, edge_index, node_names, threshold=1.0, ou
     print(f"Refined clusters saved to {output_path}")
 
 
-mclust_result=pd.read_csv("../input/cell_mclust_result.csv", index_col=0)
-# node_names = mclust_result_df.index
-# edge_index = torch.load("preprocessed/edge_index.power_transformation", weights_only=True).cpu()
-#
-# make_graph_backbone(
-#     mclust_result_df=mclust_result_df,
-#     edge_index=edge_index,
-#     node_names=node_names,
-#     output_path="../input/cell_mclust_backbone.csv"
-# )
+folder_name = 'yeo-johnson'
 
-mclust_backbone_result=pd.read_csv("../input/cell_mclust_backbone.csv", index_col=0)
+mclust_result_path = f"../input-processing/{folder_name}/cell_mclust_result.csv"
+mclust_backbone_path = f"../input-processing/{folder_name}/mclust_backbone.csv"
 
-print(mclust_backbone_result.iloc[:,-1].value_counts())
-print(mclust_result.iloc[:,-1].value_counts())
+
+mclust_result_df = pd.read_csv(mclust_result_path, index_col=0)
+node_names = mclust_result_df.index
+edge_index = torch.load("preprocessed/edge_index.pt", weights_only=True).cpu()
+
+make_graph_backbone(
+    mclust_result=mclust_result_df,
+    edge_index=edge_index,
+    node_names=node_names,
+    output_path=mclust_backbone_path
+)
+
+mclust_backbone_result=pd.read_csv(mclust_backbone_path, index_col=0)
+
+counts_backbone = mclust_backbone_result.iloc[:, -1].value_counts()
+counts_mclust   = mclust_result_df.iloc[:, -1].value_counts()
+
+print(counts_backbone)
+print(counts_mclust)
+
+counts_df = pd.DataFrame({
+    "backbone_counts": counts_backbone,
+    "mclust_counts": counts_mclust
+}).fillna(-1).astype(int)
+
+# Save to CSV
+counts_df.to_csv(f"../input-processing/{folder_name}/mclust_counts.csv")
+
+print(f"Saved counts")

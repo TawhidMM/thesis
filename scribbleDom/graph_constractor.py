@@ -6,12 +6,12 @@ from torch_scatter import scatter_add
 from argument_parser import *
 
 
-def radius_graph_torch(coords: torch.Tensor, radius: float, loop: bool = False):
+def radius_graph_torch(coords: torch.Tensor, radius: float):
     """
     PyTorch version of radius graph using torch_geometric.
     Returns: edge_index [2, num_edges]
     """
-    edge_index = radius_graph(x=coords, r=radius, loop=loop)
+    edge_index = radius_graph(x=coords, r=radius, max_num_neighbors=1000)
     return edge_index
 
 
@@ -88,19 +88,6 @@ def build_graph_from_csv(csv_path, radius=0.02, sigma=0.01):
     edge_index = radius_graph_torch(coords, radius)
     torch.save(edge_index, "preprocessed/edge_index.pt")
 
-    # Step 3: Compute edge weights
-    # edge_weight = weight_edges_torch(coords, edge_index, sigma=sigma)
-
-    # Step 4: Add self-loops
-    # edge_index, edge_weight = add_self_loops_torch(edge_index, edge_weight=None, fill_value=1.0, num_nodes=coords.size(0))
-
-    # Step 5: Normalize adjacency
-    # edge_weight = torch.ones(edge_index.size(1))
-    # edge_index, edge_weight = normalize_adj_torch(edge_index, edge_weight, num_nodes=coords.size(0))
-
-    # return coords, features, edge_index, edge_weight
-
-
 
 if __name__ == "__main__":
 
@@ -112,7 +99,7 @@ if __name__ == "__main__":
         raise ValueError(f"Unknown scheme: {scheme}. Supported schemes are 'expert' and 'mclust'.")
 
     file_path = f"/home/tawhid-mubashwir/Storage/morphlink/morphology_preprocessing/morphology_with_spot.csv"
-    morphology_pc_path = f"/home/tawhid-mubashwir/Storage/morphlink/input/morphology_pca_15.csv"
+    morphology_pc_path = f"/home/tawhid-mubashwir/Storage/morphlink/input-processing/yeo-johnson/morphology_pca.csv"
 
     spot_radius = 188.56998854645946 / 2.0
 

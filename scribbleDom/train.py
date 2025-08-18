@@ -20,12 +20,6 @@ def compute_loss(logits, labels, scribble_mask, alpha=0.5):
         scribble_mask: (N,) boolean tensor indicating labeled nodes
         alpha: weight for unsupervised loss
     """
-
-    # print("Logits shape:", logits.shape)
-    # print("Labels shape:", labels.shape)
-    # print("Scribble mask shape:", scribble_mask.shape)
-    # print("Scribble mask shape:", scribble_mask.sum())
-
     non_scribble_mask = ~scribble_mask
 
     # supervised loss (L_scr)
@@ -176,7 +170,7 @@ for parameter in tqdm(model_params):
     for epoch in range(max_iter):
         train_loss, scr_loss, sim_loss = train(model, data, optimizer, current_masks, current_labels, device)
 
-        if epoch % 100 == 0:
+        if epoch % 100 == 0 or epoch == max_iter - 1:
             print(f'Epoch {epoch:03d}, Loss: {train_loss:.4f}, '
                   f'Supervised Loss: {scr_loss:.4f}, Unsupervised Loss: {sim_loss:.4f}')
 
