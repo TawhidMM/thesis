@@ -4,8 +4,8 @@ config_file_mclust="configs/bcdc/bcdc_config_mclust.json"
 
 export CUDA_LAUNCH_BLOCKING=1
 
-#python3 graph_constractor.py --params ${config_file_expert}
-#
+python3 graph_constractor.py --params ${config_file_expert}
+
 #python3 train.py --params ${config_file_expert}
 #echo "----- training expert model finished -----"
 #

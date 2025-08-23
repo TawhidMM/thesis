@@ -5,7 +5,6 @@ from sklearn.metrics import adjusted_rand_score, accuracy_score
 from argument_parser import *
 
 
-
 def plot_scatter(data_frame, output_img_path):
     plot_color = ["#F56867", "#FEB915", "#C798EE", "#59BE86", "#7495D3", "#D1D1D1", "#6D1A9C", "#15821E", "#3A84E6",
                   "#997273"]
@@ -39,9 +38,9 @@ cell_annotation_df = pd.read_csv('../input/cell_level_annotation.csv', index_col
 
 
 # Align on index
-cell_prediction_df.sort_index(inplace=True)
-cell_coord_df.sort_index(inplace=True)
-cell_annotation_df.sort_index(inplace=True)
+# cell_prediction_df.sort_index(inplace=True)
+# cell_coord_df.sort_index(inplace=True)
+# cell_annotation_df.sort_index(inplace=True)
 
 cell_coord_df = cell_coord_df[['centroid_x_px', 'centroid_y_px']]
 
@@ -69,22 +68,34 @@ pd.DataFrame([{"ARI": ari}]).to_csv(final_output_ari)
 
 cell_prediction_df.iloc[:, -1] = cell_prediction_df.iloc[:, -1].replace({0: 1, 1: 2})
 
-print("prediction:")
-print(cell_prediction_df.iloc[:, -1].value_counts())
+mask = torch.load(f"preprocessed/scribble_mask.pt", weights_only=True).numpy()
 
-print("cell annotations:")
-print(cell_annotation_df.iloc[:, -1].value_counts())
+cell_scribble_df = pd.read_csv(f'../input/cell_level_scribble.csv', index_col=0)
+print("direct scribble: \n", cell_scribble_df.iloc[:, -1].value_counts())
+cell_scribble_df = cell_scribble_df.loc[mask]
+df_merged = pd.merge(cell_scribble_df, cell_coord_df, left_index=True, right_index=True).dropna()
+plot_scatter(df_merged, f'{output_img_folder}/direct_scribble.png')
+
+
+scribble_annotations_df = cell_annotation_df.loc[mask]
+print("annotation scribble: \n", scribble_annotations_df.iloc[:, -1].value_counts())
+df_merged = pd.merge(scribble_annotations_df, cell_coord_df, left_index=True, right_index=True).dropna()
+plot_scatter(df_merged, f'{output_img_folder}/scribble.png')
+
+
+scribble_prediction_df = cell_prediction_df.loc[mask]
+print("prediction scribble: \n", scribble_prediction_df.iloc[:, -1].value_counts())
+df_merged = pd.merge(scribble_prediction_df, cell_coord_df, left_index=True, right_index=True).dropna()
+plot_scatter(df_merged, f'{output_img_folder}/scribble_prediction.png')
+
 
 # plotting predictions
 df_merged = pd.merge(cell_prediction_df, cell_coord_df, left_index=True, right_index=True).dropna()
 print("prediction + coord: ", len(df_merged))
-
 plot_scatter(df_merged, f'{output_img_folder}/prediction.png')
-
 
 # plotting manual annotations
 df_merged = pd.merge(cell_annotation_df, cell_coord_df, left_index=True, right_index=True).dropna()
 print("annotation + coord: ", len(df_merged))
-
 plot_scatter(df_merged, f'{output_img_folder}/annotation.png')
 
