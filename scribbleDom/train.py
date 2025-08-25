@@ -113,11 +113,14 @@ if torch.cuda.is_available():
 # Load saved components
 print("loading preprocessed data......")
 
-x = torch.load("preprocessed/features.pt", weights_only=True)
-edge_index = torch.load("preprocessed/edge_index.pt", weights_only=True)
-labels = torch.load("preprocessed/labels.pt", weights_only=True)
-scribble_mask = torch.load("preprocessed/scribble_mask.pt", weights_only=True)
-cell_ids = pd.read_csv("/home/tawhid-mubashwir/Storage/morphlink/input/cell_level_annotation.csv")
+graph_representation_path = f"graph_representation/{dataset}/{samples[0]}"
+
+x = torch.load(f"{graph_representation_path}/features.pt", weights_only=True)
+edge_index = torch.load(f"{graph_representation_path}/edge_index.pt", weights_only=True)
+labels = torch.load(f"{graph_representation_path}/labels.pt", weights_only=True)
+scribble_mask = torch.load(f"{graph_representation_path}/scribble_mask.pt", weights_only=True)
+
+cell_ids = pd.read_csv(f"preprocessed/{dataset}/{samples[0]}/cell_level_annotation.csv")
 cell_ids = cell_ids['Cell ID'].values
 
 

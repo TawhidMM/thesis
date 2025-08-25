@@ -94,8 +94,8 @@ def pick_best_graph_run(base_folder):
 
     results = []
 
-    features = torch.load("preprocessed/features.pt", weights_only=True)
-    edge_index = torch.load("preprocessed/edge_index.pt", weights_only=True)
+    features = torch.load(f"graph_representation/{dataset}/{sample}/features.pt", weights_only=True)
+    edge_index = torch.load(f"graph_representation/{dataset}/{sample}/edge_index.pt", weights_only=True)
 
     for output_dir in output_directories:
         print(f"Evaluating {output_dir}...")
@@ -123,7 +123,7 @@ for sample in samples:
 
     model_output_directory = f"{output_data_path}/{dataset}/{sample}/morphology/{scheme}"
 
-    best_model_path = pick_best_graph_run("/home/tawhid-mubashwir/Storage/morphlink/scribbleDom/model_outputs/cancers/bcdc_ffpe/morphology/expert")
+    best_model_path = pick_best_graph_run(model_output_directory)
 
 
     src_final_meta = f"{best_model_path}/meta_data.csv"

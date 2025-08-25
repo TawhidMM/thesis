@@ -6,7 +6,7 @@
 
     "space_ranger_output_directory" : "raw_gene_x",
     "dataset": "Human_DLPFC",
-    "samples": ["151507","151508","151509","151510","151669","151670","151671","151672","151673","151674","151675","151676"],
+    "samples": ["151673"],
     "technology": "visium",
     "n_pcs": 15,
     "n_cluster_for_auto_scribble": 7,

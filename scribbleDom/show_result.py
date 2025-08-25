@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import torch
-from sklearn.metrics import adjusted_rand_score, accuracy_score
+from sklearn.metrics import adjusted_rand_score
 from argument_parser import *
 
 
@@ -26,28 +26,21 @@ def plot_scatter(data_frame, output_img_path):
 
 output_img_folder = f'{final_output_folder}/{dataset}/{samples[0]}/morphology/{scheme}'
 sell_prediction_file = f'{final_output_folder}/{dataset}/{samples[0]}/morphology/{scheme}/final_cell_labels.csv'
+cell_coords_file = f'preprocessed/{dataset}/{samples[0]}/cell_coords.csv'
+cell_annotation_file = f'preprocessed/{dataset}/{samples[0]}/cell_level_annotation.csv'
 
 # Read files
 cell_prediction_df = pd.read_csv(sell_prediction_file, index_col=0)
-cell_coord_df = pd.read_csv('../morphology_preprocessing/morphology_with_spot.csv', index_col=1)
-
-spot_prediction_df = pd.read_csv('/mnt/Drive E/Class Notes/L-4 T-1/Thesis/ScribbleDom/final_outputs/cancers/bcdc_ffpe/expert/final_barcode_labels.csv', index_col=0)
-spot_annotation_df = pd.read_csv('/mnt/Drive E/Class Notes/L-4 T-1/Thesis/ScribbleDom/preprocessed_data/cancers/bcdc_ffpe/manual_annotations.csv', index_col=0)
-spot_scribble_df = pd.read_csv('/mnt/Drive E/Class Notes/L-4 T-1/Thesis/ScribbleDom/preprocessed_data/cancers/bcdc_ffpe/manual_scribble.csv', index_col=0)
-cell_annotation_df = pd.read_csv('../input/cell_level_annotation.csv', index_col=0)
-
+cell_coord_df = pd.read_csv(cell_coords_file, index_col=0)
+cell_annotation_df = pd.read_csv(cell_annotation_file, index_col=0)
 
 # Align on index
 # cell_prediction_df.sort_index(inplace=True)
 # cell_coord_df.sort_index(inplace=True)
 # cell_annotation_df.sort_index(inplace=True)
 
-cell_coord_df = cell_coord_df[['centroid_x_px', 'centroid_y_px']]
-
-
 # Calculate ARI
 def calc_ari(df_1, df_2):
-
     df_merged = pd.merge(df_1, df_2, left_index=True, right_index=True).dropna()
 
     cols = df_merged.columns
@@ -66,21 +59,21 @@ print(f"Ari for dataset:{dataset} scheme:{scheme} is: ", ari)
 pd.DataFrame([{"ARI": ari}]).to_csv(final_output_ari)
 
 
-cell_prediction_df.iloc[:, -1] = cell_prediction_df.iloc[:, -1].replace({0: 1, 1: 2})
+# cell_prediction_df.iloc[:, -1] = cell_prediction_df.iloc[:, -1].replace({0: 1, 1: 2})
 
-mask = torch.load(f"preprocessed/scribble_mask.pt", weights_only=True).numpy()
+mask = torch.load(f"graph_representation/{dataset}/{samples[0]}/scribble_mask.pt", weights_only=True).numpy()
 
-cell_scribble_df = pd.read_csv(f'../input/cell_level_scribble.csv', index_col=0)
+cell_scribble_df = pd.read_csv(f'preprocessed/{dataset}/{samples[0]}/cell_level_scribble.csv', index_col=0)
 print("direct scribble: \n", cell_scribble_df.iloc[:, -1].value_counts())
 cell_scribble_df = cell_scribble_df.loc[mask]
 df_merged = pd.merge(cell_scribble_df, cell_coord_df, left_index=True, right_index=True).dropna()
-plot_scatter(df_merged, f'{output_img_folder}/direct_scribble.png')
+plot_scatter(df_merged, f'{output_img_folder}/scribble.png')
 
 
 scribble_annotations_df = cell_annotation_df.loc[mask]
 print("annotation scribble: \n", scribble_annotations_df.iloc[:, -1].value_counts())
 df_merged = pd.merge(scribble_annotations_df, cell_coord_df, left_index=True, right_index=True).dropna()
-plot_scatter(df_merged, f'{output_img_folder}/scribble.png')
+plot_scatter(df_merged, f'{output_img_folder}/scribble_annotation.png')
 
 
 scribble_prediction_df = cell_prediction_df.loc[mask]
@@ -98,4 +91,3 @@ plot_scatter(df_merged, f'{output_img_folder}/prediction.png')
 df_merged = pd.merge(cell_annotation_df, cell_coord_df, left_index=True, right_index=True).dropna()
 print("annotation + coord: ", len(df_merged))
 plot_scatter(df_merged, f'{output_img_folder}/annotation.png')
-

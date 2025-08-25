@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import torch
 from torch_geometric.nn import radius_graph
@@ -53,7 +55,7 @@ def create_scribble_mask(df, label_col):
     df[label_col] = df[label_col].fillna(-1)
     scribble_mask = df[label_col] != -1
 
-    torch.save(torch.tensor(scribble_mask.to_numpy()), "preprocessed/scribble_mask.pt")
+    torch.save(torch.tensor(scribble_mask.to_numpy()), f"{saving_path}/scribble_mask.pt")
 
 def extract_labels(df, label_col, class_map=None):
     labels = df[label_col].fillna(-1)
@@ -63,7 +65,7 @@ def extract_labels(df, label_col, class_map=None):
     mapped_labels = labels.map(class_map).fillna(-1).astype(int)
 
     mapped_labels = torch.tensor(mapped_labels.values)
-    torch.save(mapped_labels, "preprocessed/labels.pt")
+    torch.save(mapped_labels, f"{saving_path}/labels.pt")
 
 def create_feature_matrix(feature_csv_path):
     """
@@ -74,36 +76,38 @@ def create_feature_matrix(feature_csv_path):
     features = features.drop('Cell ID', axis=1)
 
     features = torch.tensor(features.values, dtype=torch.float32)
-    torch.save(features, "preprocessed/features.pt")
+    torch.save(features, f"{saving_path}/features.pt")
 
 # --- Main Function ---
-def build_graph_from_csv(csv_path, radius=0.02, sigma=0.01):
+def build_graph_from_csv(csv_path, radius=0.02):
     df = pd.read_csv(csv_path)
     print("number of nodes in graph construction: ", len(df))
 
     # Step 1: Extract coordinates and convert to tensor
-    coords = torch.tensor(df[['centroid_x_px', 'centroid_y_px']].values, dtype=torch.float32)
+    coords = torch.tensor(df.iloc[:, -2:].values, dtype=torch.float32)
 
     # Step 2: Build radius graph
     edge_index = radius_graph_torch(coords, radius)
-    torch.save(edge_index, "preprocessed/edge_index.pt")
+    torch.save(edge_index, f"{saving_path}/edge_index.pt")
 
 
 if __name__ == "__main__":
+    saving_path = f"graph_representation/{dataset}/{samples[0]}"
+    os.makedirs(saving_path, exist_ok=True)
 
     if scheme == 'expert':
-        cell_scribble = "/home/tawhid-mubashwir/Storage/morphlink/input/cell_level_scribble.csv"
+        cell_scribble = f"preprocessed/{dataset}/{samples[0]}/cell_level_scribble.csv"
     elif scheme == 'mclust':
         cell_scribble = "../input/cell_mclust_backbone.csv"
     else:
         raise ValueError(f"Unknown scheme: {scheme}. Supported schemes are 'expert' and 'mclust'.")
 
-    file_path = f"/home/tawhid-mubashwir/Storage/morphlink/morphology_preprocessing/morphology_with_spot.csv"
-    morphology_pc_path = f"/home/tawhid-mubashwir/Storage/morphlink/input-processing/yeo-johnson/morphology_pca.csv"
+    coords_path = f"preprocessed/{dataset}/{samples[0]}/cell_coords.csv"
+    morphology_pc_path = f"/home/tawhid-mubashwir/Storage/morphlink/input-processing/{dataset}/{samples[0]}/yeo-johnson/morphology_pca.csv"
 
-    spot_radius = 188.56998854645946 / 2.0
+    graph_radius = 96.40082438014726 / 2.0
 
-    build_graph_from_csv(file_path, spot_radius)
+    build_graph_from_csv(coords_path, graph_radius)
     print("Graph construction completed.")
 
     df = pd.read_csv(cell_scribble)
