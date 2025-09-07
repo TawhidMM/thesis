@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+from argument_parser import *
 
 
 def label_percentage_bins(df_cell_spot, df_cell_clusters, results_folder):
@@ -33,7 +34,7 @@ def label_percentage_bins(df_cell_spot, df_cell_clusters, results_folder):
     bin_counts = bin_counts.pivot(index="Cluster_Label", columns="bin", values="count").fillna(0).astype(int)
 
     # Save CSV
-    bin_counts.to_csv(f"../input-processing/{results_folder}/spot_labels/label_stat.csv", index=True)
+    bin_counts.to_csv(f"{root_path}/spot_labels/label_stat.csv", index=True)
 
 
 def assign_spot_labels(df_cell_spot, df_cell_clusters, results_folder, threshold=0.5):
@@ -75,7 +76,7 @@ def assign_spot_labels(df_cell_spot, df_cell_clusters, results_folder, threshold
     df_spot_labels = pd.DataFrame(spot_label_info)
 
     # Save results
-    output_path = f"../input-processing/{results_folder}/spot_labels/{threshold}"
+    output_path = f"{root_path}/spot_labels/{threshold}"
     os.makedirs(output_path, exist_ok=True)
 
     # Overall bin stats
@@ -93,9 +94,11 @@ def assign_spot_labels(df_cell_spot, df_cell_clusters, results_folder, threshold
 
 
 # Example usage:
-results_folder = 'raw'
-cell_spot_path = '../morphology_preprocessing/morphology_with_spot.csv'
-cell_cluster_path = f'../input-processing/{results_folder}/cell_mclust_result.csv'
+results_folder = 'yeo-johnson'
+root_path = f'../input-processing/{dataset}/{samples[0]}/{results_folder}'
+
+cell_spot_path = f'preprocessed/{dataset}/{samples[0]}/morphology_with_spot.csv'
+cell_cluster_path = f'{root_path}/cell_mclust_result.csv'
 
 cell_spot_df = pd.read_csv(cell_spot_path)
 cell_cluster_df = pd.read_csv(cell_cluster_path)

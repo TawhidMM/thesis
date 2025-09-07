@@ -15,9 +15,9 @@ def plot_scatter(data_frame, output_img_path):
 
     # Coordinates: last two cols of cell_coord_df are assumed to be x and y
     x = data_frame[data_frame.columns[-2]].values
-    # y = (data_frame[data_frame.columns[-1]].max() - data_frame[data_frame.columns[-1]]).values
+    y = (data_frame[data_frame.columns[-1]].max() - data_frame[data_frame.columns[-1]]).values
 
-    y = ( data_frame[data_frame.columns[-1]]).values
+    # y = ( data_frame[data_frame.columns[-1]]).values
 
     plt.scatter(x, y, c=colors_to_plt, s=0.2, marker='o')
     plt.savefig(output_img_path, dpi=1200, bbox_inches='tight', pad_inches=0)

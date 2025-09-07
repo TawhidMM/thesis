@@ -5,7 +5,7 @@
 
 config_file_expert="configs/human_dlpfc/dlpfc_config_expert.json"
 
-export CUDA_LAUNCH_BLOCKING=1
+#export CUDA_LAUNCH_BLOCKING=1
 
 #python3 graph_constractor.py --params ${config_file_expert}
 #
@@ -16,3 +16,5 @@ export CUDA_LAUNCH_BLOCKING=1
 #echo "----- post processing expert model finished -----"
 
 python3 show_result.py --params ${config_file_expert}
+
+#python3 combine_mclust_labels.py --params ${config_file_expert}
