@@ -38,7 +38,7 @@ def label_percentage_bins(df_cell_spot, df_cell_clusters, results_folder):
 
 
 def assign_spot_labels(df_cell_spot, df_cell_clusters, results_folder, threshold=0.5):
-    # Merge cell spot info with cluster labels
+    # Merge cell spot info with cluster scribble_labels
     df_merged = df_cell_spot.merge(
         df_cell_clusters,
         left_on="Object ID",
@@ -88,7 +88,7 @@ def assign_spot_labels(df_cell_spot, df_cell_clusters, results_folder, threshold
     # Save outputs
     df_spot_labels.to_csv(f"{output_path}/spot_labels_from_cell.csv", index=False)
 
-    # Save value counts for majority labels
+    # Save value counts for majority scribble_labels
     label_counts = df_spot_labels["majority_label"].value_counts(dropna=False)
     label_counts.to_csv(f"{output_path}/majority_label_counts.csv")
 

@@ -1,0 +1,38 @@
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.05
+Ari for dataset:cancers scheme:expert is:  0.22365535131386566
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.1
+Ari for dataset:cancers scheme:expert is:  0.16842036053190632
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.15
+Ari for dataset:cancers scheme:expert is:  0.14699251042015407
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.2
+Ari for dataset:cancers scheme:expert is:  0.22271245580547777
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.25
+Ari for dataset:cancers scheme:expert is:  0.14595074728391771
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.3
+Ari for dataset:cancers scheme:expert is:  0.22887441401054998
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.35
+Ari for dataset:cancers scheme:expert is:  0.1188150807715569
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.4
+Ari for dataset:cancers scheme:expert is:  0.1774333232510702
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.45
+Ari for dataset:cancers scheme:expert is:  0.23102279166189837
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.5
+Ari for dataset:cancers scheme:expert is:  0.14585468745052677
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.55
+Ari for dataset:cancers scheme:expert is:  0.21716390307690017
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.6
+Ari for dataset:cancers scheme:expert is:  0.21660389675440964
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.65
+Ari for dataset:cancers scheme:expert is:  0.3113479808510478
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.7
+Ari for dataset:cancers scheme:expert is:  0.07909431034612559
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.75
+Ari for dataset:cancers scheme:expert is:  0.12444974089542665
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.8
+Ari for dataset:cancers scheme:expert is:  0.2524707741317827
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.85
+Ari for dataset:cancers scheme:expert is:  0.3532622905466749
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.9
+Ari for dataset:cancers scheme:expert is:  0.35315597393867976
+model_outputs/cancers/bcdc_ffpe/morphology-new/expert/Hyper_0.95
+Ari for dataset:cancers scheme:expert is:  0.28059114202893987

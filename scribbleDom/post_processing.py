@@ -41,7 +41,7 @@ def compute_label_probability(labels, neighbors, gamma=3):
 
     counts = np.zeros((num_nodes, num_classes), dtype=np.float32)
 
-    # Count labels among neighbors
+    # Count scribble_labels among neighbors
     for i in range(num_nodes):
         for nbr in neighbors[i]:
             lbl = labels[nbr]

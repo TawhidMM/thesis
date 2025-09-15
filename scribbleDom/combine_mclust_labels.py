@@ -56,12 +56,12 @@ read_spot_label_csvs(results_folder)
 
 
 
-# df = pd.read_csv("/mnt/Drive E/Class Notes/L-4 T-1/Thesis/ScribbleDom/preprocessed_data/cancers/bcdc_ffpe/combined_mclust_backbone.csv")
-# print(df.iloc[:, -1].value_counts())
+# scribble_df = pd.read_csv("/mnt/Drive E/Class Notes/L-4 T-1/Thesis/ScribbleDom/preprocessed_data/cancers/bcdc_ffpe/combined_mclust_backbone.csv")
+# print(scribble_df.iloc[:, -1].value_counts())
 #
 #
-# df = pd.read_csv("/home/tawhid-mubashwir/Storage/morphlink/input-processing/without_od/spot_labels_from_cell.csv")
-# print(df.iloc[:, 1].value_counts())
+# scribble_df = pd.read_csv("/home/tawhid-mubashwir/Storage/morphlink/input-processing/without_od/spot_labels_from_cell.csv")
+# print(scribble_df.iloc[:, 1].value_counts())
 
 """
 manual scribble

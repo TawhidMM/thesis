@@ -1,0 +1,39 @@
+----- training expert model finished -----
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.05
+Ari for dataset:Human_DLPFC scheme:expert is:  0.29298420055116275
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.1
+Ari for dataset:Human_DLPFC scheme:expert is:  0.28732356331699155
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.15
+Ari for dataset:Human_DLPFC scheme:expert is:  0.2797526413263315
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.2
+Ari for dataset:Human_DLPFC scheme:expert is:  0.28049305534431906
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.25
+Ari for dataset:Human_DLPFC scheme:expert is:  0.28808028800519303
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.3
+Ari for dataset:Human_DLPFC scheme:expert is:  0.28312143643998067
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.35
+Ari for dataset:Human_DLPFC scheme:expert is:  0.2842290253413961
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.4
+Ari for dataset:Human_DLPFC scheme:expert is:  0.28224894535321204
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.45
+Ari for dataset:Human_DLPFC scheme:expert is:  0.2872450101456175
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.5
+Ari for dataset:Human_DLPFC scheme:expert is:  0.28354627054197673
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.55
+Ari for dataset:Human_DLPFC scheme:expert is:  0.2784553138037643
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.6
+Ari for dataset:Human_DLPFC scheme:expert is:  0.22114731572789836
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.65
+Ari for dataset:Human_DLPFC scheme:expert is:  0.2034683338299543
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.7
+Ari for dataset:Human_DLPFC scheme:expert is:  0.23836566354932595
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.75
+Ari for dataset:Human_DLPFC scheme:expert is:  0.2155212227931412
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.8
+Ari for dataset:Human_DLPFC scheme:expert is:  0.20606626555819785
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.85
+Ari for dataset:Human_DLPFC scheme:expert is:  0.21846361740427928
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.9
+Ari for dataset:Human_DLPFC scheme:expert is:  0.14861727498248478
+model_outputs/Human_DLPFC/151673/morphology-new/expert/Hyper_0.95
+Ari for dataset:Human_DLPFC scheme:expert is:  0.17906575927004276
