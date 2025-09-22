@@ -38,7 +38,7 @@ def train(model, data, optimizer, cell_to_spot, num_spots, spot_labels, labeled_
 
     # Forward pass → spot-level logits
     out = model(
-        data.x.to(device),
+        data.morph_pcs.to(device),
         data.edge_index.to(device),
         cell_to_spot.to(device),
         num_spots
@@ -85,9 +85,9 @@ def scribble_dom_hyperparams():
                 for alpha in alpha_options:
                     model_params.append(
                         {
+                            'sample': sample,
                             'seed': seed,
                             'lr': lr,
-                            'sample': sample,
                             'alpha': alpha
                         }
                     )
@@ -95,23 +95,17 @@ def scribble_dom_hyperparams():
     return model_params
 
 
-def auto_scribble_dom_hyperparams():
-    model_params = scribble_dom_hyperparams()
-    new_params = []
-
-    for beta in beta_options:
-        for params in model_params:
-            param_copy = params.copy()
-            param_copy['beta'] = beta
-            new_params.append(param_copy)
-
-    return new_params
+def set_seed(seed):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    # random.seed(12345)
 
 
-
-
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
 
 
 device = torch.device('cpu')
@@ -120,77 +114,57 @@ if torch.cuda.is_available():
     print("GPU available")
     device = torch.device('cuda')
 
-# Load saved components
-print("loading preprocessed data......")
-
-graph_representation_path = f"graph_representation/{dataset}/{samples[0]}"
-
-x = torch.load(f"{graph_representation_path}/features.pt", weights_only=True)
-edge_index = torch.load(f"{graph_representation_path}/edge_index.pt", weights_only=True)
-labels = torch.load(f"{graph_representation_path}/scribble_labels.pt", weights_only=True)
-scribble_mask = torch.load(f"{graph_representation_path}/scribble_mask.pt", weights_only=True)
-cell_to_spot = torch.load(f"{graph_representation_path}/cell_to_spot.pt", weights_only=True)
-mask = torch.load(f"{graph_representation_path}/mask.pt", weights_only=True)
-
-# cell_ids = pd.read_csv(f"preprocessed/{dataset}/{samples[0]}/cell_level_annotation.csv")
-cell_ids = pd.read_csv(f"/mnt/Drive E/Class Notes/L-4 T-1/Thesis/ScribbleDom/preprocessed_data/{dataset}/{samples[0]}/manual_scribble.csv", index_col=0)
-
-cell_ids = cell_ids.sort_index().index
-cell_ids = cell_ids[mask.numpy()]
-
-# print("Num labeled spots:", scribble_mask.sum().item())
-# print("Num unlabeled spots:", (~scribble_mask).sum().item())
-# print("Unique scribble_labels in supervised set:", torch.unique(scribble_labels[scribble_mask]))
-# print("cell to spot shape:", torch.unique(cell_to_spot))
 
 
-
-if scheme == 'expert':
-    model_params = scribble_dom_hyperparams()
-elif scheme == 'mclust':
-    model_params = auto_scribble_dom_hyperparams()
-else:
-    raise ValueError(f"Unknown scheme: {scheme}. Supported schemes are 'expert' and 'mclust'.")
-
+model_params = scribble_dom_hyperparams()
+last_sample = ''
 
 for parameter in tqdm(model_params):
     print(parameter)
+    sample = parameter['sample']
     seed = parameter['seed']
     lr = parameter['lr']
-    sample = parameter['sample']
     alpha = parameter['alpha']
 
-    if scheme == 'mclust':
-        beta = parameter['beta']
+    graph_representation_path = f"graph_representation/{dataset}/{sample}"
+
+    morphology_pcs = torch.load(f"{graph_representation_path}/features.pt", weights_only=True)
+    edge_index = torch.load(f"{graph_representation_path}/edge_index.pt", weights_only=True)
+    labels = torch.load(f"{graph_representation_path}/scribble_labels.pt", weights_only=True)
+    scribble_mask = torch.load(f"{graph_representation_path}/scribble_mask.pt", weights_only=True)
+    cell_to_spot = torch.load(f"{graph_representation_path}/cell_to_spot.pt", weights_only=True)
+    mask = torch.load(f"{graph_representation_path}/mask.pt", weights_only=True)
+
+    # cell_ids = pd.read_csv(f"preprocessed/{dataset}/{sample}/cell_level_annotation.csv")
+    cell_ids = pd.read_csv(
+        f"/mnt/Drive E/Class Notes/L-4 T-1/Thesis/ScribbleDom/preprocessed_data/{dataset}/{sample}/manual_scribble.csv",
+        index_col=0)
+
+    cell_ids = cell_ids.sort_index().index
+    cell_ids = cell_ids[mask.numpy()]
+
+    # print("Num labeled spots:", scribble_mask.sum().item())
+    # print("Num unlabeled spots:", (~scribble_mask).sum().item())
+    # print("Unique scribble_labels in supervised set:", torch.unique(scribble_labels[scribble_mask]))
+    # print("cell to spot shape:", torch.unique(cell_to_spot))
 
     print("************************************************")
-    print('Model description:')
-    print(f'sample: {sample}')
-    print(f'seed: {seed}')
-    print(f'lr: {lr}')
-    print(f'alpha: {alpha}')
-
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    set_seed(seed)
 
     # Create a PyG Data object
-    data = Data(x=x, edge_index=edge_index)
+    data = Data(morph_pcs=morphology_pcs, edge_index=edge_index)
 
     NUM_CLASSES = labels.max().item() + 1
     print(f'Number of classes: {NUM_CLASSES}')
 
-    # model = GraphClassifier(in_dim=x.size(1), hidden_dims=[64], num_classes=n_cluster)
-    model = GCNPipeline(input_dim=x.size(1), gcn_hidden_dims=[64, 64], proj_dim=128, out_dim=n_cluster)
+    # morphology_encoder = GraphClassifier(in_dim=morph_pcs.size(1), hidden_dims=[64], num_classes=n_cluster)
+    model = GCNPipeline(input_dim=morphology_pcs.size(1), gcn_hidden_dims=[64, 64], proj_dim=128, out_dim=NUM_CLASSES)
     model = model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     current_labels = labels.clone()
     current_masks = scribble_mask.clone()
-
-    if scheme == 'mclust':
-        current_labels, current_masks = partial_scribble(current_labels, current_masks, beta)
 
     for epoch in range(max_iter):
         train_loss, scr_loss, sim_loss = (
@@ -205,7 +179,7 @@ for parameter in tqdm(model_params):
 
     with torch.no_grad():
         logits = model(
-            data.x.to(device), data.edge_index.to(device),
+            data.morph_pcs.to(device), data.edge_index.to(device),
             cell_to_spot.to(device), len(current_labels)
         ).cpu()
         predictions = logits.argmax(dim=1).numpy()
@@ -213,8 +187,7 @@ for parameter in tqdm(model_params):
 
     output_folder_path = f'./{output_data_path}/{dataset}/{sample}/morphology-new'
     leaf_output_folder_path = f'{output_folder_path}/{scheme}/Hyper_{alpha}'
-    if scheme == 'mclust':
-        leaf_output_folder_path += f'_{beta}'
+
     os.makedirs(leaf_output_folder_path, exist_ok=True)
 
     logits_df = pd.DataFrame(
@@ -242,6 +215,3 @@ for parameter in tqdm(model_params):
             "alpha": alpha
         }]
     )
-    if scheme == 'mclust':
-        meta_data_df['beta'] = beta
-    meta_data_df.to_csv(f'{leaf_output_folder_path}/meta_data.csv')
